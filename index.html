@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#009FDA">
+<title>IglesiaDigital</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root{
+  --azul:#009FDA;
+  --azul-oscuro:#003B6F;
+  --dorado:#F0AB00;
+  --dorado-oscuro:#b8860b;
+  --gris:#f0f2f5;
+  --gris-texto:#65676B;
+  --texto:#1c1e21;
+  --blanco:#ffffff;
+  --sombra:0 1px 3px rgba(0,0,0,0.12);
+  --radio:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gris);color:var(--texto);height:100vh;overflow:hidden}
+
+/* SPLASH */
+#splash{position:fixed;inset:0;background:linear-gradient(160deg,var(--azul-oscuro),var(--azul));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity 0.5s}
+.splash-logo{width:90px;height:90px;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+#splash h1{color:white;font-size:24px;font-weight:700;margin-top:14px}
+#splash p{color:rgba(255,255,255,0.7);font-size:13px;margin-top:4px}
+#splash .lema{color:var(--dorado);font-size:11px;margin-top:16px;font-style:italic}
+
+/* LOGIN */
+#login-screen{display:none;position:fixed;inset:0;background:linear-gradient(160deg,var(--azul-oscuro),var(--azul));align-items:center;justify-content:center;z-index:90;flex-direction:column;padding:2rem}
+#login-screen.show{display:flex}
+.login-card{background:white;border-radius:20px;padding:2rem;width:100%;max-width:340px;text-align:center}
+.login-logo{width:70px;height:70px;margin:0 auto 1rem}
+.login-title{font-size:20px;font-weight:700;color:var(--azul-oscuro);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--gris-texto);margin-bottom:1.5rem}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px;border:1.5px solid #e0e0e0;border-radius:10px;background:white;cursor:pointer;font-size:14px;font-weight:500;color:var(--texto);margin-bottom:12px}
+.divider{display:flex;align-items:center;gap:10px;margin:10px 0;color:var(--gris-texto);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e0e0e0}
+.login-tabs{display:flex;border-radius:8px;overflow:hidden;border:1px solid #e0e0e0;margin-bottom:12px}
+.ltab{flex:1;padding:8px;font-size:13px;cursor:pointer;background:#f5f5f5;color:var(--gris-texto);border:none;font-weight:500}
+.ltab.active{background:var(--azul);color:white}
+.linput{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;margin-bottom:10px}
+.linput:focus{outline:none;border-color:var(--azul)}
+.btn-entrar{width:100%;background:linear-gradient(90deg,var(--azul-oscuro),var(--azul));color:white;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.nombre-wrap{display:none}
+.nombre-wrap.show{display:block}
+#login-error{font-size:12px;color:#d32f2f;margin-top:8px;display:none;text-align:center}
+
+/* APP */
+#app{display:none;flex-direction:column;height:100vh}
+
+/* HEADER */
+#header{background:linear-gradient(90deg,var(--azul-oscuro),var(--azul));padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.logo-sm{width:34px;height:34px}
+.h-title{color:white;font-size:15px;font-weight:700}
+.h-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}
+.av-dorado{background:var(--dorado);color:var(--azul-oscuro)}
+.av-azul{background:var(--azul);color:white}
+.av-verde{background:#1D9E75;color:white}
+.av-morado{background:#534AB7;color:white}
+.logout-btn{background:rgba(255,255,255,0.2);border:none;color:white;font-size:10px;padding:4px 8px;border-radius:10px;cursor:pointer}
+
+/* CONTENT */
+#content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:70px}
+
+/* BOTTOM NAV */
+#bottom-nav{background:white;border-top:1px solid #e0e0e0;display:flex;position:fixed;bottom:0;left:0;right:0;z-index:50;height:58px;box-shadow:0 -2px 8px rgba(0,0,0,0.06)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--gris-texto);border:none;background:none;font-size:10px;font-weight:500;padding:6px}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-btn.active{color:var(--azul)}
+
+/* VIEWS */
+.view{display:none;padding:10px}
+.view.active{display:block}
+
+/* FEED */
+.compose-box{background:white;border-radius:var(--radio);padding:12px;margin-bottom:10px;box-shadow:var(--sombra)}
+.compose-top{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.compose-area{flex:1;background:#f0f2f5;border-radius:24px;padding:10px 14px;font-size:13px;color:var(--gris-texto);cursor:pointer}
+.compose-actions{display:flex;gap:8px;border-top:1px solid #e0e0e0;padding-top:10px}
+.compose-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:8px;border:none;background:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--gris-texto)}
+.compose-btn:hover{background:#f0f2f5}
+
+.post{background:white;border-radius:var(--radio);margin-bottom:10px;box-shadow:var(--sombra);overflow:hidden}
+.post-header{display:flex;align-items:center;gap:10px;padding:12px 12px 8px}
+.post-info{flex:1}
+.post-autor{font-size:13px;font-weight:600;color:var(--texto)}
+.post-time{font-size:11px;color:var(--gris-texto)}
+.post-badge{font-size:10px;padding:1px 7px;border-radius:20px;font-weight:600;margin-left:4px}
+.pb-dorado{background:#FFF3CC;color:#854F0B}
+.pb-azul{background:#E6F1FB;color:#0C447C}
+.pb-verde{background:#E1F5EE;color:#0F6E56}
+.pb-morado{background:#EEEDFE;color:#3C3489}
+.post-menu{color:var(--gris-texto);cursor:pointer;background:none;border:none;font-size:18px;padding:4px}
+.post-body{padding:0 12px 10px;font-size:13px;line-height:1.6;color:var(--texto)}
+.post-img{width:100%;max-height:400px;object-fit:cover;display:block}
+.post-event{margin:0 12px 10px;background:linear-gradient(135deg,var(--azul-oscuro),var(--azul));border-radius:10px;padding:12px;color:white}
+.event-date{font-size:11px;opacity:0.8}
+.event-title{font-size:14px;font-weight:700;margin:4px 0}
+.event-lugar{font-size:12px;opacity:0.85}
+.post-stats{display:flex;gap:4px;padding:4px 12px;border-top:1px solid #e0e0e0;border-bottom:1px solid #e0e0e0;font-size:12px;color:var(--gris-texto)}
+.post-actions{display:flex;padding:4px 8px}
+.act-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:8px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--gris-texto)}
+.act-btn:hover{background:#f0f2f5}
+.act-btn.liked{color:#e41c1c}
+
+/* PERFIL */
+.profile-header{background:white;border-radius:var(--radio);margin-bottom:10px;box-shadow:var(--sombra);overflow:hidden}
+.profile-cover{height:100px;background:linear-gradient(135deg,var(--azul-oscuro),var(--azul))}
+.profile-info{padding:0 16px 16px;position:relative}
+.profile-av{width:72px;height:72px;border-radius:50%;background:var(--dorado);border:4px solid white;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:var(--azul-oscuro);margin-top:-36px;margin-bottom:8px}
+.profile-name{font-size:18px;font-weight:700;color:var(--texto)}
+.profile-bio{font-size:13px;color:var(--gris-texto);margin:4px 0 10px}
+.profile-stats{display:flex;gap:20px}
+.pstat{text-align:center}
+.pstat-n{font-size:16px;font-weight:700;color:var(--texto)}
+.pstat-l{font-size:11px;color:var(--gris-texto)}
+.btn-editar{background:var(--gris);border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;color:var(--texto)}
+
+/* EVENTOS */
+.evento-card{background:white;border-radius:var(--radio);margin-bottom:10px;box-shadow:var(--sombra);overflow:hidden}
+.evento-cover{height:120px;background:linear-gradient(135deg,var(--azul-oscuro),var(--azul));display:flex;align-items:center;justify-content:center;font-size:40px}
+.evento-body{padding:12px}
+.evento-fecha{font-size:11px;color:var(--azul);font-weight:600;text-transform:uppercase}
+.evento-titulo{font-size:15px;font-weight:700;color:var(--texto);margin:4px 0}
+.evento-lugar{font-size:12px;color:var(--gris-texto);margin-bottom:10px}
+.btn-asistiré{background:var(--azul);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+
+/* SECTION HEADER */
+.sec-header{background:linear-gradient(135deg,var(--azul-oscuro),var(--azul));border-radius:var(--radio);padding:16px;margin-bottom:10px;text-align:center;color:white}
+.sec-header h3{font-size:15px;font-weight:700}
+.sec-header p{font-size:11px;opacity:0.8;margin-top:3px}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end}
+.modal-bg.open{display:flex}
+.modal-sheet{background:white;border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;color:var(--azul-oscuro);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{color:var(--gris-texto);cursor:pointer;font-size:24px;background:none;border:none;line-height:1}
+.form-label{font-size:12px;color:var(--gris-texto);font-weight:600;margin-bottom:5px;display:block}
+.form-input{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;margin-bottom:12px}
+.form-input:focus{outline:none;border-color:var(--azul)}
+.form-textarea{width:100%;border:1.5px solid #e0e0e0;border-radius:10px;padding:11px 14px;font-size:13px;font-family:inherit;resize:none;height:80px;margin-bottom:12px}
+.foto-preview{width:100%;border-radius:10px;max-height:200px;object-fit:cover;margin-bottom:12px;display:none}
+.btn-foto{width:100%;background:#f0f2f5;border:2px dashed #ccc;border-radius:10px;padding:16px;font-size:13px;cursor:pointer;color:var(--gris-texto);margin-bottom:12px;text-align:center}
+.btn-publicar{width:100%;background:linear-gradient(90deg,var(--azul-oscuro),var(--azul));color:white;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer}
+.tipo-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tipo-btn{font-size:12px;padding:6px 14px;border-radius:20px;border:1.5px solid #e0e0e0;cursor:pointer;background:white;color:var(--gris-texto);font-weight:500}
+.tipo-btn.sel{background:var(--azul);color:white;border-color:var(--azul)}
+
+/* TOAST */
+#toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:var(--azul-oscuro);color:white;padding:10px 20px;border-radius:24px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:300;white-space:nowrap}
+#toast.show{opacity:1}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--gris-texto)}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.loading{text-align:center;padding:30px;color:var(--gris-texto);font-size:13px}
+.spinner{width:28px;height:28px;border:3px solid #e0e0e0;border-top-color:var(--azul);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <svg class="splash-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="60" r="58" fill="#003B6F" stroke="#F0AB00" stroke-width="3"/>
+    <ellipse cx="60" cy="60" rx="30" ry="58" fill="none" stroke="#009FDA" stroke-width="1.5" opacity="0.6"/>
+    <ellipse cx="60" cy="60" rx="58" ry="20" fill="none" stroke="#009FDA" stroke-width="1.5" opacity="0.4"/>
+    <circle cx="60" cy="60" r="20" fill="#009FDA"/>
+    <path d="M48 60 L60 48 L72 60 L60 72 Z" fill="#F0AB00"/>
+    <text x="60" y="100" text-anchor="middle" font-size="7" font-weight="700" fill="#F0AB00" font-family="Arial">IGLESIA</text>
+    <text x="60" y="110" text-anchor="middle" font-size="5" fill="rgba(255,255,255,0.7)" font-family="Arial">DIGITAL</text>
+  </svg>
+  <h1>IglesiaDigital</h1>
+  <p>Red social cristiana</p>
+  <div class="lema">Conectando la iglesia con la tecnología</div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <svg class="login-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="58" fill="#003B6F" stroke="#F0AB00" stroke-width="3"/>
+      <circle cx="60" cy="60" r="20" fill="#009FDA"/>
+      <path d="M48 60 L60 48 L72 60 L60 72 Z" fill="#F0AB00"/>
+    </svg>
+    <div class="login-title">IglesiaDigital</div>
+    <div class="login-sub">Tu red social cristiana</div>
+    <button class="btn-google" onclick="loginGoogle()">
+      <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Entrar con Google
+    </button>
+    <div class="divider">o con correo</div>
+    <div class="login-tabs">
+      <button class="ltab active" onclick="switchTab('login',this)">Iniciar sesión</button>
+      <button class="ltab" onclick="switchTab('registro',this)">Registrarse</button>
+    </div>
+    <div class="nombre-wrap" id="nombre-wrap">
+      <input class="linput" id="l-nombre" type="text" placeholder="Tu nombre completo">
+    </div>
+    <input class="linput" id="l-email" type="email" placeholder="Correo electrónico">
+    <input class="linput" id="l-pass" type="password" placeholder="Contraseña">
+    <button class="btn-entrar" id="btn-accion" onclick="loginEmail()">Iniciar sesión</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="header">
+    <svg class="logo-sm" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="58" fill="#003B6F" stroke="#F0AB00" stroke-width="2"/>
+      <circle cx="60" cy="60" r="20" fill="#009FDA"/>
+      <path d="M48 60 L60 48 L72 60 L60 72 Z" fill="#F0AB00"/>
+    </svg>
+    <span class="h-title">IglesiaDigital</span>
+    <div class="h-right">
+      <div class="av av-dorado" id="user-av">?</div>
+      <button class="logout-btn" onclick="cerrarSesion()">Salir</button>
+    </div>
+  </div>
+
+  <div id="content">
+
+    <!-- FEED -->
+    <div id="view-feed" class="view active">
+      <div class="compose-box">
+        <div class="compose-top">
+          <div class="av av-dorado" id="compose-av">?</div>
+          <div class="compose-area" onclick="openModal('modal-post')">¿Qué quieres compartir hoy?</div>
+        </div>
+        <div class="compose-actions">
+          <button class="compose-btn" onclick="abrirPostTipo('foto')">📸 Foto</button>
+          <button class="compose-btn" onclick="abrirPostTipo('evento')">📅 Evento</button>
+          <button class="compose-btn" onclick="abrirPostTipo('oracion')">🙏 Oración</button>
+        </div>
+      </div>
+      <div id="feed-list"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+    <!-- EVENTOS -->
+    <div id="view-eventos" class="view">
+      <div class="sec-header"><h3>📅 Eventos</h3><p>Próximas actividades de la iglesia</p></div>
+      <div id="eventos-list"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+    <!-- MIEMBROS -->
+    <div id="view-miembros" class="view">
+      <div class="sec-header"><h3>👥 Comunidad</h3><p>Miembros de la iglesia</p></div>
+      <div id="miembros-list"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+    <!-- PERFIL -->
+    <div id="view-perfil" class="view">
+      <div class="profile-header">
+        <div class="profile-cover"></div>
+        <div class="profile-info">
+          <div class="profile-av" id="perfil-av">?</div>
+          <div class="profile-name" id="perfil-name">Cargando...</div>
+          <div class="profile-bio" id="perfil-bio">Miembro de IglesiaDigital</div>
+          <div class="profile-stats">
+            <div class="pstat"><div class="pstat-n" id="perfil-posts">0</div><div class="pstat-l">Publicaciones</div></div>
+            <div class="pstat"><div class="pstat-n" id="perfil-likes">0</div><div class="pstat-l">Me gusta</div></div>
+          </div>
+          <div style="margin-top:12px">
+            <button class="btn-editar" onclick="openModal('modal-perfil')">✏️ Editar perfil</button>
+          </div>
+        </div>
+      </div>
+      <div id="mis-posts"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+  </div>
+
+  <div id="bottom-nav">
+    <button class="nav-btn active" onclick="nav('feed',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Inicio
+    </button>
+    <button class="nav-btn" onclick="nav('eventos',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Eventos
+    </button>
+    <button class="nav-btn" onclick="nav('miembros',this)">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Comunidad
+    </button>
+    <button class="nav-btn" onclick="nav('perfil',this)">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- MODAL PUBLICAR -->
+<div class="modal-bg" id="modal-post">
+  <div class="modal-sheet">
+    <div class="modal-title">Nueva publicación <button class="modal-close" onclick="closeModal('modal-post')">×</button></div>
+    <div class="tipo-btns">
+      <button class="tipo-btn sel" onclick="selTipo(this,'anuncio')">📢 Anuncio</button>
+      <button class="tipo-btn" onclick="selTipo(this,'testimonio')">⭐ Testimonio</button>
+      <button class="tipo-btn" onclick="selTipo(this,'oracion')">🙏 Oración</button>
+      <button class="tipo-btn" onclick="selTipo(this,'alabanza')">🎵 Alabanza</button>
+    </div>
+    <textarea class="form-textarea" id="post-texto" placeholder="¿Qué quieres compartir?"></textarea>
+    <input type="file" id="foto-input" accept="image/*" style="display:none" onchange="previsualizarFoto(this)">
+    <img id="foto-preview" class="foto-preview">
+    <button class="btn-foto" onclick="document.getElementById('foto-input').click()">📸 Agregar foto</button>
+    <button class="btn-publicar" onclick="publicar()">Publicar</button>
+  </div>
+</div>
+
+<!-- MODAL EVENTO -->
+<div class="modal-bg" id="modal-evento">
+  <div class="modal-sheet">
+    <div class="modal-title">Nuevo evento <button class="modal-close" onclick="closeModal('modal-evento')">×</button></div>
+    <label class="form-label">Nombre del evento</label>
+    <input class="form-input" id="ev-titulo" type="text" placeholder="Ej: Culto de Navidad">
+    <label class="form-label">Fecha</label>
+    <input class="form-input" id="ev-fecha" type="date">
+    <label class="form-label">Hora</label>
+    <input class="form-input" id="ev-hora" type="time">
+    <label class="form-label">Lugar</label>
+    <input class="form-input" id="ev-lugar" type="text" placeholder="Ej: Templo central">
+    <label class="form-label">Descripción</label>
+    <textarea class="form-textarea" id="ev-desc" placeholder="Detalles del evento..."></textarea>
+    <button class="btn-publicar" onclick="crearEvento()">Crear evento</button>
+  </div>
+</div>
+
+<!-- MODAL PERFIL -->
+<div class="modal-bg" id="modal-perfil">
+  <div class="modal-sheet">
+    <div class="modal-title">Editar perfil <button class="modal-close" onclick="closeModal('modal-perfil')">×</button></div>
+    <label class="form-label">Nombre</label>
+    <input class="form-input" id="edit-nombre" type="text" placeholder="Tu nombre">
+    <label class="form-label">Bio</label>
+    <input class="form-input" id="edit-bio" type="text" placeholder="Algo sobre ti...">
+    <label class="form-label">Zona</label>
+    <select class="form-input" id="edit-zona">
+      <option value="">Sin zona</option>
+      <option>Zona 1</option><option>Zona 2</option><option>Zona 3</option>
+      <option>Zona 4</option><option>Zona 5</option><option>Zona 6</option><option>Zona 7</option>
+    </select>
+    <button class="btn-publicar" onclick="guardarPerfil()">Guardar</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, getDoc, setDoc, query, orderBy, where, serverTimestamp, limit, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBBm9H0SB4mUmqy61WyqCG4FsFfGysPJ80",
+  authDomain: "iglesiadigital-ad872.firebaseapp.com",
+  projectId: "iglesiadigital-ad872",
+  storageBucket: "iglesiadigital-ad872.firebasestorage.app",
+  messagingSenderId: "159154545318",
+  appId: "1:159154545318:web:4b0a9c3c0ae35a86d9ca67"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+let currentUser = null;
+let loginMode = 'login';
+let postTipo = 'anuncio';
+let fotoBase64 = null;
+const ADMIN_EMAIL = 'osmar0721@gmail.com';
+
+// ======== AUTH ========
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('login-screen').classList.remove('show');
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('splash').style.display = 'none';
+    const ini = (user.displayName || user.email).substring(0,2).toUpperCase();
+    document.getElementById('user-av').textContent = ini;
+    document.getElementById('compose-av').textContent = ini;
+    await crearPerfilSiNoExiste(user);
+    cargarFeed();
+    cargarPerfil();
+  } else {
+    currentUser = null;
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('login-screen').classList.add('show');
+  }
+});
+
+async function crearPerfilSiNoExiste(user) {
+  const ref = doc(db, 'perfiles', user.uid);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      nombre: user.displayName || user.email.split('@')[0],
+      email: user.email,
+      bio: 'Miembro de IglesiaDigital',
+      zona: '',
+      esAdmin: user.email === ADMIN_EMAIL,
+      fechaRegistro: serverTimestamp()
+    });
+  }
+}
+
+setTimeout(() => {
+  if (!currentUser) {
+    document.getElementById('splash').style.opacity = '0';
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('login-screen').classList.add('show');
+    }, 500);
+  }
+}, 2000);
+
+window.switchTab = function(mode, btn) {
+  loginMode = mode;
+  document.querySelectorAll('.ltab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const nw = document.getElementById('nombre-wrap');
+  const ba = document.getElementById('btn-accion');
+  if (mode === 'registro') { nw.classList.add('show'); ba.textContent = 'Crear cuenta'; ba.onclick = registrarEmail; }
+  else { nw.classList.remove('show'); ba.textContent = 'Iniciar sesión'; ba.onclick = loginEmail; }
+}
+
+window.loginGoogle = async function() {
+  try { await signInWithPopup(auth, provider); }
+  catch(e) { mostrarError('Error con Google'); }
+}
+
+window.loginEmail = async function() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if (!email || !pass) { mostrarError('Completa todos los campos'); return; }
+  try { await signInWithEmailAndPassword(auth, email, pass); }
+  catch(e) { mostrarError('Correo o contraseña incorrectos'); }
+}
+
+async function registrarEmail() {
+  const nombre = document.getElementById('l-nombre').value.trim();
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if (!nombre || !email || !pass) { mostrarError('Completa todos los campos'); return; }
+  if (pass.length < 6) { mostrarError('Contraseña mínimo 6 caracteres'); return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: nombre });
+  } catch(e) { mostrarError('Error: ' + e.message); }
+}
+
+function mostrarError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 4000);
+}
+
+window.cerrarSesion = async function() { await signOut(auth); toast('Sesión cerrada'); }
+
+// ======== FEED ========
+async function cargarFeed() {
+  try {
+    const q = query(collection(db,'posts'), orderBy('fecha','desc'), limit(30));
+    const snap = await getDocs(q);
+    
+    // Limpiar posts vencidos (más de 7 días)
+    const hace7dias = new Date(Date.now() - 7*24*60*60*1000);
+    
+    if (snap.empty) {
+      document.getElementById('feed-list').innerHTML = '<div class="empty"><div class="empty-icon">✝️</div><p>Sé el primero en publicar algo</p></div>';
+      return;
+    }
+    
+    let html = '';
+    const avColors = ['av-azul','av-dorado','av-verde','av-morado'];
+    let i = 0;
+    snap.forEach(d => {
+      const p = {id:d.id,...d.data()};
+      const fecha = p.fecha?.toDate ? p.fecha.toDate() : new Date();
+      if (fecha < hace7dias) return; // Skip expired
+      const avC = avColors[i++ % 4];
+      const ini = (p.autor||'?').substring(0,2).toUpperCase();
+      const badges = {anuncio:'pb-azul',testimonio:'pb-dorado',oracion:'pb-morado',alabanza:'pb-verde',evento:'pb-azul'};
+      const labels = {anuncio:'Anuncio',testimonio:'Testimonio',oracion:'Petición',alabanza:'Alabanza',evento:'Evento'};
+      
+      html += `<div class="post">
+        <div class="post-header">
+          <div class="av ${avC}">${ini}</div>
+          <div class="post-info">
+            <div class="post-autor">${p.autor||'Miembro'} <span class="post-badge ${badges[p.tipo]||'pb-azul'}">${labels[p.tipo]||'Post'}</span></div>
+            <div class="post-time">${fmt(fecha)}</div>
+          </div>
+        </div>
+        ${p.foto ? `<img src="${p.foto}" class="post-img" loading="lazy">` : ''}
+        ${p.texto ? `<div class="post-body">${p.texto}</div>` : ''}
+        <div class="post-stats"><span>❤️ ${p.likes||0} me gusta</span></div>
+        <div class="post-actions">
+          <button class="act-btn" onclick="darLike('${p.id}',${p.likes||0},this)">❤️ Me gusta</button>
+          <button class="act-btn" onclick="compartir('${p.id}')">↗️ Compartir</button>
+        </div>
+      </div>`;
+    });
+    document.getElementById('feed-list').innerHTML = html || '<div class="empty"><div class="empty-icon">✝️</div><p>No hay publicaciones aún</p></div>';
+  } catch(e) {
+    document.getElementById('feed-list').innerHTML = '<div class="empty"><div class="empty-icon">✝️</div><p>Sé el primero en publicar algo</p></div>';
+  }
+}
+
+window.selTipo = function(btn, tipo) {
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel'); postTipo = tipo;
+}
+
+window.abrirPostTipo = function(tipo) {
+  if (tipo === 'evento') { openModal('modal-evento'); return; }
+  if (tipo === 'foto') { document.getElementById('foto-input').click(); }
+  openModal('modal-post');
+}
+
+window.previsualizarFoto = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    fotoBase64 = e.target.result;
+    const prev = document.getElementById('foto-preview');
+    prev.src = fotoBase64; prev.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+window.publicar = async function() {
+  const texto = document.getElementById('post-texto').value.trim();
+  if (!texto && !fotoBase64) { toast('Escribe algo o agrega una foto'); return; }
+  toast('Publicando...');
+  try {
+    await addDoc(collection(db,'posts'), {
+      texto, foto: fotoBase64||null, tipo: postTipo,
+      autor: currentUser.displayName || currentUser.email.split('@')[0],
+      uid: currentUser.uid, likes: 0, fecha: serverTimestamp()
+    });
+    document.getElementById('post-texto').value = '';
+    document.getElementById('foto-preview').style.display = 'none';
+    fotoBase64 = null;
+    closeModal('modal-post');
+    toast('✅ ¡Publicado!');
+    await cargarFeed();
+  } catch(e) { toast('❌ Error: ' + e.message); }
+}
+
+window.darLike = async function(id, actual, btn) {
+  const n = actual + 1;
+  btn.closest('.post').querySelector('.post-stats').innerHTML = `<span>❤️ ${n} me gusta</span>`;
+  btn.classList.add('liked');
+  try { await updateDoc(doc(db,'posts',id), {likes:n}); } catch(e){}
+}
+
+window.compartir = function(id) {
+  if (navigator.share) { navigator.share({title:'IglesiaDigital', url:window.location.href}); }
+  else { toast('Comparte desde tu navegador'); }
+}
+
+// ======== EVENTOS ========
+async function cargarEventos() {
+  try {
+    const q = query(collection(db,'eventos'), orderBy('fecha','asc'));
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      document.getElementById('eventos-list').innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>No hay eventos próximos</p></div>';
+      return;
+    }
+    let html = '';
+    snap.forEach(d => {
+      const e = {id:d.id,...d.data()};
+      const emojis = ['⛪','🎵','🙏','✝️','🌟'];
+      const em = emojis[Math.floor(Math.random()*emojis.length)];
+      html += `<div class="evento-card">
+        <div class="evento-cover">${em}</div>
+        <div class="evento-body">
+          <div class="evento-fecha">${e.fecha} · ${e.hora||''}</div>
+          <div class="evento-titulo">${e.titulo}</div>
+          <div class="evento-lugar">📍 ${e.lugar}</div>
+          ${e.descripcion ? `<p style="font-size:12px;color:var(--gris-texto);margin-bottom:10px">${e.descripcion}</p>` : ''}
+          <button class="btn-asistiré" onclick="asistiré('${e.id}',this)">✅ Asistiré</button>
+        </div>
+      </div>`;
+    });
+    document.getElementById('eventos-list').innerHTML = html;
+  } catch(e) {
+    document.getElementById('eventos-list').innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>No hay eventos aún</p></div>';
+  }
+}
+
+window.crearEvento = async function() {
+  const titulo = document.getElementById('ev-titulo').value.trim();
+  const fecha = document.getElementById('ev-fecha').value;
+  const hora = document.getElementById('ev-hora').value;
+  const lugar = document.getElementById('ev-lugar').value.trim();
+  const desc = document.getElementById('ev-desc').value.trim();
+  if (!titulo || !fecha || !lugar) { toast('Completa título, fecha y lugar'); return; }
+  try {
+    await addDoc(collection(db,'eventos'), {titulo, fecha, hora, lugar, descripcion:desc, creadoPor:currentUser.uid, asistentes:0, fechaCreacion:serverTimestamp()});
+    closeModal('modal-evento');
+    toast('✅ Evento creado');
+    await cargarEventos();
+    // También publicar en el feed
+    await addDoc(collection(db,'posts'), {
+      texto:`📅 Nuevo evento: ${titulo}\n📍 ${lugar}\n🗓️ ${fecha} ${hora}`,
+      foto:null, tipo:'evento',
+      autor: currentUser.displayName || currentUser.email.split('@')[0],
+      uid: currentUser.uid, likes: 0, fecha: serverTimestamp()
+    });
+    await cargarFeed();
+  } catch(e) { toast('❌ Error: ' + e.message); }
+}
+
+window.asistiré = async function(id, btn) {
+  btn.textContent = '✅ ¡Confirmado!';
+  btn.style.background = '#1D9E75';
+  try { await updateDoc(doc(db,'eventos',id), {asistentes: (await getDoc(doc(db,'eventos',id))).data().asistentes + 1}); } catch(e){}
+}
+
+// ======== MIEMBROS ========
+async function cargarMiembros() {
+  try {
+    const snap = await getDocs(collection(db,'perfiles'));
+    if (snap.empty) { document.getElementById('miembros-list').innerHTML = '<div class="empty"><div class="empty-icon">👥</div><p>No hay miembros aún</p></div>'; return; }
+    const avColors = ['av-azul','av-dorado','av-verde','av-morado'];
+    let html = '';
+    let i = 0;
+    snap.forEach(d => {
+      const m = {id:d.id,...d.data()};
+      const avC = avColors[i++%4];
+      const ini = (m.nombre||'?').substring(0,2).toUpperCase();
+      html += `<div style="background:white;border-radius:var(--radio);padding:12px;margin-bottom:8px;box-shadow:var(--sombra);display:flex;align-items:center;gap:12px">
+        <div class="av ${avC}" style="width:44px;height:44px;font-size:14px">${ini}</div>
+        <div>
+          <div style="font-size:13px;font-weight:600">${m.nombre||'Miembro'} ${m.esAdmin?'👑':''}</div>
+          <div style="font-size:11px;color:var(--gris-texto)">${m.bio||'Miembro de IglesiaDigital'}</div>
+          ${m.zona ? `<div style="font-size:11px;color:var(--azul);margin-top:2px">${m.zona}</div>` : ''}
+        </div>
+      </div>`;
+    });
+    document.getElementById('miembros-list').innerHTML = html;
+  } catch(e) { document.getElementById('miembros-list').innerHTML = '<div class="empty"><div class="empty-icon">👥</div><p>Error cargando miembros</p></div>'; }
+}
+
+// ======== PERFIL ========
+async function cargarPerfil() {
+  if (!currentUser) return;
+  try {
+    const ref = doc(db,'perfiles',currentUser.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const p = snap.data();
+      const ini = (p.nombre||'?').substring(0,2).toUpperCase();
+      document.getElementById('perfil-av').textContent = ini;
+      document.getElementById('perfil-name').textContent = p.nombre || 'Usuario';
+      document.getElementById('perfil-bio').textContent = p.bio || 'Miembro de IglesiaDigital';
+      document.getElementById('edit-nombre').value = p.nombre || '';
+      document.getElementById('edit-bio').value = p.bio || '';
+      document.getElementById('edit-zona').value = p.zona || '';
+    }
+    // Contar posts propios
+    const postsSnap = await getDocs(query(collection(db,'posts'), where('uid','==',currentUser.uid)));
+    document.getElementById('perfil-posts').textContent = postsSnap.size;
+    let totalLikes = 0;
+    postsSnap.forEach(d => totalLikes += (d.data().likes||0));
+    document.getElementById('perfil-likes').textContent = totalLikes;
+    
+    // Mis posts
+    let html = '';
+    postsSnap.forEach(d => {
+      const p = {id:d.id,...d.data()};
+      html += `<div class="post">
+        ${p.foto ? `<img src="${p.foto}" class="post-img" loading="lazy">` : ''}
+        ${p.texto ? `<div class="post-body">${p.texto}</div>` : ''}
+        <div class="post-stats"><span>❤️ ${p.likes||0}</span></div>
+      </div>`;
+    });
+    document.getElementById('mis-posts').innerHTML = html || '<div class="empty"><div class="empty-icon">📝</div><p>No has publicado nada aún</p></div>';
+  } catch(e) {}
+}
+
+window.guardarPerfil = async function() {
+  const nombre = document.getElementById('edit-nombre').value.trim();
+  const bio = document.getElementById('edit-bio').value.trim();
+  const zona = document.getElementById('edit-zona').value;
+  if (!nombre) { toast('El nombre es requerido'); return; }
+  try {
+    await updateDoc(doc(db,'perfiles',currentUser.uid), {nombre, bio, zona});
+    await updateProfile(currentUser, {displayName:nombre});
+    closeModal('modal-perfil');
+    toast('✅ Perfil actualizado');
+    await cargarPerfil();
+  } catch(e) { toast('❌ Error: ' + e.message); }
+}
+
+// ======== NAVEGACIÓN ========
+window.nav = function(v, el) {
+  document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (v==='eventos') cargarEventos();
+  if (v==='miembros') cargarMiembros();
+  if (v==='perfil') cargarPerfil();
+  if (v==='feed') cargarFeed();
+}
+
+// ======== UTILS ========
+function fmt(d) {
+  if (!d) return 'Ahora';
+  const diff = Math.floor((new Date()-d)/60000);
+  if (diff < 1) return 'Ahora mismo';
+  if (diff < 60) return 'Hace ' + diff + ' min';
+  if (diff < 1440) return 'Hace ' + Math.floor(diff/60) + 'h';
+  return d.toLocaleDateString('es-CO',{day:'numeric',month:'short'});
+}
+window.openModal = function(id) { document.getElementById(id).classList.add('open'); }
+window.closeModal = function(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => m.addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); }));
+window.toast = function(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
+</script>
+</body>
+</html>
